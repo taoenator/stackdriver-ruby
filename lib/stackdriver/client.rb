@@ -1,6 +1,8 @@
 require 'stackdriver/client/custom'
 require 'stackdriver/client/deploy_event'
 require 'stackdriver/client/annotation_event'
+require 'faraday'
+require 'multi_json'
 
 module Stackdriver
   #
@@ -45,7 +47,9 @@ module Stackdriver
 
         # TODO: Confirm whether 201 is the only success response.
         @last_response.status == 201
-      rescue
+      rescue Exception => e
+        puts e.message
+        puts e.backtrace.inspect
         false
       end
     end

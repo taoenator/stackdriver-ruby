@@ -1,3 +1,5 @@
+require 'json'
+
 #
 # See: http://feedback.stackdriver.com/knowledgebase/articles/181488-sending-custom-application-metrics-to-the-stackdri
 #
@@ -7,16 +9,21 @@ module Stackdriver
 
       ENDPOINT = 'v1/custom'.freeze
 
-      def custom(name, value, collected_at=Time.now.to_i, instance=nil)
-        data_point = {
-          name:         name,
-          value:        value,
-          collected_at: collected_at,
-          instance:     instance,
-        }
+      @@data_points = []
 
-        request(:post, ENDPOINT, gateway_message(data_point))
+      def custom(name, value, collected_at=Time.now.to_i, instance=nil)
+        request(:post, ENDPOINT, gateway_message(make_data_point(name, value, collected_at, instance)))
       end
+
+      def custom_multi()
+        request(:post, ENDPOINT, gateway_message(@@data_points))
+      end
+
+      def add_data_point(name, value, collected_at=Time.now.to_i, instance=nil)
+        @@data_points.push(make_data_point(name, value, collected_at, instance))
+      end
+
+      private
 
       #
       # Wraps the datapoint per doc.
@@ -29,6 +36,14 @@ module Stackdriver
         }
       end
 
+      def make_data_point(name, value, collected_at, instance)
+        {
+            name:         name,
+            value:        value,
+            collected_at: collected_at,
+            instance:     instance,
+        }
+      end
     end
   end
 end
